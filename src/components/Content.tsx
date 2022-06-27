@@ -1,31 +1,27 @@
-import { useState, useEffect } from "react";
+import { memo, useMemo } from "react";
+import { MovieCard } from "./MovieCard";
 
-import "../styles/content.scss";
+interface ContentProps {
+  selectedGenre: {
+    id: number;
+    name: "action" | "comedy" | "documentary" | "drama" | "horror" | "family";
+    title: string;
+  };
 
-import { api } from "../services/api";
+  movies: Array<{
+    imdbID: string;
+    Title: string;
+    Poster: string;
+    Ratings: Array<{
+      Source: string;
+      Value: string;
+    }>;
+    Runtime: string;
+  }>;
+}
 
-import { GenreResponseProps } from "../@types/types";
-import { MovieProps } from "../@types/types";
-
-import { MovieCard } from "../components/MovieCard";
-
-export function Content({ selectedGenreId }: { selectedGenreId: number }) {
-  const [movies, setMovies] = useState<MovieProps[]>([]);
-  const [selectedGenre, setSelectedGenre] = useState<GenreResponseProps>(
-    {} as GenreResponseProps
-  );
-
-  useEffect(() => {
-    api
-      .get<MovieProps[]>(`movies/?Genre_id=${selectedGenreId}`)
-      .then(response => {
-        setMovies(response.data);
-      });
-
-    api.get<GenreResponseProps>(`genres/${selectedGenreId}`).then(response => {
-      setSelectedGenre(response.data);
-    });
-  }, [selectedGenreId]);
+export function Content({ selectedGenre, movies }: ContentProps) {
+  const memoizedMovies = useMemo(() => movies, [movies]);
 
   return (
     <div className="container">
@@ -37,7 +33,7 @@ export function Content({ selectedGenreId }: { selectedGenreId: number }) {
 
       <main>
         <div className="movies-list">
-          {movies.map(movie => (
+          {memoizedMovies.map((movie) => (
             <MovieCard
               key={movie.imdbID}
               title={movie.Title}
